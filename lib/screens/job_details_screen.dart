@@ -233,6 +233,8 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
           final job = provider.selectedJob;
           if (job == null) return const SizedBox.shrink();
 
+          final isApplied = job.hasApplied || provider.isJobApplied(job.id);
+
           return Container(
             padding: const EdgeInsets.all(20),
             decoration: BoxDecoration(
@@ -242,7 +244,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
               ),
             ),
             child: SafeArea(
-              child: job.hasApplied
+              child: isApplied
                   ? const StatusChip(
                       text: 'Вы уже откликнулись',
                       color: AppColors.success,

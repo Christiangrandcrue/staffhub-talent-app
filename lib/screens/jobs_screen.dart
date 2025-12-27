@@ -23,7 +23,9 @@ class _JobsScreenState extends State<JobsScreen> {
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      context.read<JobsProvider>().loadJobs(refresh: true);
+      final provider = context.read<JobsProvider>();
+      provider.syncAppliedJobs(); // Sync applied status first
+      provider.loadJobs(refresh: true);
       _loadUnreadCount();
     });
     _scrollController.addListener(_onScroll);
@@ -101,12 +103,14 @@ class _JobsScreenState extends State<JobsScreen> {
                         }
 
                         final job = provider.jobs[index];
+                        final isApplied = job.hasApplied || provider.isJobApplied(job.id);
                         return JobCard(
                           job: job,
                           onTap: () => _openJobDetails(job.id),
-                          onApply: job.hasApplied
+                          onApply: isApplied
                               ? null
                               : () => _applyForJob(job.id),
+                          showAppliedBadge: isApplied,
                         );
                       },
                     );

@@ -13,7 +13,13 @@ class JobsProvider extends ChangeNotifier {
   int _currentPage = 1;
   int _totalPages = 1;
   
+  // Local cache of applied job IDs (workaround for backend bug)
+  final Set<int> _appliedJobIds = {};
+  
   JobsProvider({required ApiService apiService}) : _apiService = apiService;
+  
+  // Check if job is applied (from cache or API)
+  bool isJobApplied(int jobId) => _appliedJobIds.contains(jobId);
   
   List<Job> get jobs => _jobs;
   Job? get selectedJob => _selectedJob;
@@ -92,6 +98,9 @@ class JobsProvider extends ChangeNotifier {
     try {
       await _apiService.applyForJob(jobId, coverMessage: coverMessage);
       
+      // Mark as applied locally
+      _appliedJobIds.add(jobId);
+      
       // Update local state
       final index = _jobs.indexWhere((j) => j.id == jobId);
       if (index != -1) {
@@ -102,11 +111,42 @@ class JobsProvider extends ChangeNotifier {
         await loadJobDetails(jobId);
       }
       
+      _error = null;
       return true;
     } catch (e) {
-      _error = e.toString();
+      final errorStr = e.toString().toLowerCase();
+      
+      // Handle "Already applied" - mark locally and show friendly message
+      if (errorStr.contains('already applied') || errorStr.contains('already_applied')) {
+        _appliedJobIds.add(jobId);
+        _error = 'Вы уже откликнулись на эту вакансию';
+      } else if (errorStr.contains('409')) {
+        _appliedJobIds.add(jobId);
+        _error = 'Вы уже откликнулись на эту вакансию';
+      } else if (errorStr.contains('emirates')) {
+        _error = 'Для этой вакансии нужен Emirates ID';
+      } else if (errorStr.contains('no slots') || errorStr.contains('slots')) {
+        _error = 'Все места заняты';
+      } else {
+        _error = 'Ошибка отклика: $e';
+      }
+      
       notifyListeners();
       return false;
+    }
+  }
+  
+  // Load user's applications to sync applied status
+  Future<void> syncAppliedJobs() async {
+    try {
+      final applications = await _apiService.getMyApplications();
+      _appliedJobIds.clear();
+      for (final app in applications) {
+        _appliedJobIds.add(app.jobPostId);
+      }
+      notifyListeners();
+    } catch (_) {
+      // Silent fail - use existing cache
     }
   }
   

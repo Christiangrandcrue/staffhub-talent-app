@@ -7,12 +7,14 @@ class JobCard extends StatelessWidget {
   final Job job;
   final VoidCallback? onTap;
   final VoidCallback? onApply;
+  final bool showAppliedBadge;
 
   const JobCard({
     super.key,
     required this.job,
     this.onTap,
     this.onApply,
+    this.showAppliedBadge = false,
   });
 
   @override
@@ -125,7 +127,7 @@ class JobCard extends StatelessWidget {
           ),
           
           // Apply button if not applied
-          if (!job.hasApplied && onApply != null) ...[
+          if (!showAppliedBadge && !job.hasApplied && onApply != null) ...[
             const SizedBox(height: 16),
             SizedBox(
               width: double.infinity,
@@ -137,7 +139,7 @@ class JobCard extends StatelessWidget {
             ),
           ],
           
-          if (job.hasApplied) ...[
+          if (showAppliedBadge || job.hasApplied) ...[
             const SizedBox(height: 12),
             const StatusChip(
               text: 'Вы откликнулись',
