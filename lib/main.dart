@@ -12,6 +12,10 @@ import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'utils/constants.dart';
 
+// Global shared services - created once
+final ApiService apiService = ApiService();
+final StorageService storageService = StorageService();
+
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
@@ -36,10 +40,6 @@ class StaffHubTalentApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    // Create shared services
-    final apiService = ApiService();
-    final storageService = StorageService();
-
     return MultiProvider(
       providers: [
         ChangeNotifierProvider(
