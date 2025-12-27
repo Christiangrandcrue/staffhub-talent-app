@@ -54,9 +54,19 @@ class JobsProvider extends ChangeNotifier {
       }
       _totalPages = response.totalPages;
       _currentPage++;
+      _error = null;
       
     } catch (e) {
-      _error = e.toString();
+      final errorStr = e.toString();
+      if (errorStr.contains('401') || errorStr.contains('authenticated')) {
+        _error = 'Сессия истекла. Перезайдите в приложение.';
+      } else if (errorStr.contains('интернет') || errorStr.contains('connection')) {
+        _error = 'Нет подключения к интернету';
+      } else if (errorStr.contains('timeout')) {
+        _error = 'Сервер не отвечает. Попробуйте позже.';
+      } else {
+        _error = 'Ошибка загрузки: $errorStr';
+      }
     }
     
     _isLoading = false;

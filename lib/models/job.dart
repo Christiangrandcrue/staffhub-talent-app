@@ -90,7 +90,7 @@ class Job {
       languagesRequired: json['languages_required'] != null
           ? List<String>.from(json['languages_required'])
           : [],
-      requiresEmiratesId: json['requires_emirates_id'] ?? false,
+      requiresEmiratesId: json['requires_emirates_id'] == 1 || json['requires_emirates_id'] == true,
       skillsRequired: json['skills_required'] != null
           ? List<String>.from(json['skills_required'])
           : [],
@@ -102,9 +102,9 @@ class Job {
       contactPerson: json['contact_person'],
       contactPhone: json['contact_phone'],
       publishedBy: json['published_by'],
-      isFeatured: json['is_featured'] ?? false,
+      isFeatured: json['is_featured'] == 1 || json['is_featured'] == true,
       publishedAt: json['published_at'],
-      hasApplied: json['has_applied'] ?? false,
+      hasApplied: json['has_applied'] == 1 || json['has_applied'] == true,
     );
   }
 }

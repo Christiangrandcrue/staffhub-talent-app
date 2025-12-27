@@ -1,4 +1,6 @@
 import 'dart:convert';
+import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:http/http.dart' as http;
 import '../utils/constants.dart';
 import '../models/user.dart';
@@ -39,13 +41,22 @@ class ApiService {
   }
 
   Future<Map<String, dynamic>> _handleResponse(http.Response response) async {
-    final body = jsonDecode(response.body);
+    if (kDebugMode) {
+      debugPrint('API Response [${response.statusCode}]: ${response.body.length > 200 ? response.body.substring(0, 200) : response.body}');
+    }
+    
+    Map<String, dynamic> body;
+    try {
+      body = jsonDecode(response.body);
+    } catch (e) {
+      throw ApiException('Invalid response format', statusCode: response.statusCode);
+    }
     
     if (response.statusCode >= 200 && response.statusCode < 300) {
       return body;
     }
     
-    final error = body['error'] ?? 'Unknown error';
+    final error = body['error'] ?? body['message'] ?? 'Unknown error';
     throw ApiException(error, statusCode: response.statusCode);
   }
 
@@ -92,6 +103,10 @@ class ApiService {
 
   // Jobs endpoints
   Future<JobsResponse> getJobs({String? city, int page = 1, int limit = 20}) async {
+    if (_token == null) {
+      throw ApiException('Not authenticated. Please login.', statusCode: 401);
+    }
+    
     final queryParams = {
       'page': page.toString(),
       'limit': limit.toString(),
@@ -103,9 +118,21 @@ class ApiService {
     final uri = Uri.parse('${AppConstants.baseUrl}/jobs')
         .replace(queryParameters: queryParams);
     
-    final response = await http.get(uri, headers: _headers);
-    final data = await _handleResponse(response);
-    return JobsResponse.fromJson(data);
+    if (kDebugMode) {
+      debugPrint('GET Jobs: $uri');
+      debugPrint('Headers: $_headers');
+    }
+    
+    try {
+      final response = await http.get(uri, headers: _headers)
+          .timeout(const Duration(seconds: 30));
+      final data = await _handleResponse(response);
+      return JobsResponse.fromJson(data);
+    } on SocketException {
+      throw ApiException('Нет подключения к интернету');
+    } on http.ClientException {
+      throw ApiException('Ошибка соединения с сервером');
+    }
   }
 
   Future<Job> getJobDetails(int jobId) async {
