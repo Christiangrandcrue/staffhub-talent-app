@@ -2,9 +2,12 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:intl/date_symbol_data_local.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_messaging/firebase_messaging.dart';
 
 import 'services/api_service.dart';
 import 'services/storage_service.dart';
+import 'services/push_notification_service.dart';
 import 'providers/auth_provider.dart';
 import 'providers/jobs_provider.dart';
 import 'providers/data_provider.dart';
@@ -15,9 +18,26 @@ import 'utils/constants.dart';
 // Global shared services - created once
 final ApiService apiService = ApiService();
 final StorageService storageService = StorageService();
+late final PushNotificationService pushService;
+
+// Background message handler (must be top-level)
+@pragma('vm:entry-point')
+Future<void> _firebaseMessagingBackgroundHandler(RemoteMessage message) async {
+  await Firebase.initializeApp();
+  debugPrint('Background push: ${message.notification?.title}');
+}
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  
+  // Initialize Firebase
+  await Firebase.initializeApp();
+  
+  // Setup background message handler
+  FirebaseMessaging.onBackgroundMessage(_firebaseMessagingBackgroundHandler);
+  
+  // Initialize push notification service
+  pushService = PushNotificationService(apiService);
   
   // Initialize date formatting for Russian locale
   await initializeDateFormatting('ru', null);

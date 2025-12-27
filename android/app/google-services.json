@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "268620255650",
+    "project_id": "staffhub-talent",
+    "storage_bucket": "staffhub-talent.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:268620255650:android:52f4ea0c628c06210322fb",
+        "android_client_info": {
+          "package_name": "com.talenthub.talent"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCvfnQhRq5BNJEXpXEnyDluz3oVub2p58g"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

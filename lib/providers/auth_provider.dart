@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 import '../models/user.dart';
 import '../services/api_service.dart';
 import '../services/storage_service.dart';
+import '../main.dart' show pushService;
 
 enum AuthState { initial, loading, authenticated, unauthenticated, error }
 
@@ -72,6 +73,10 @@ class AuthProvider extends ChangeNotifier {
       
       _state = AuthState.authenticated;
       notifyListeners();
+      
+      // Initialize push notifications after login
+      await pushService.initialize();
+      
       return true;
     } catch (e) {
       _errorMessage = _getErrorMessage(e.toString());
@@ -82,6 +87,9 @@ class AuthProvider extends ChangeNotifier {
   }
   
   Future<void> logout() async {
+    // Unregister FCM token before logout
+    await pushService.unregisterToken();
+    
     _apiService.clearToken();
     await _storageService.clearAll();
     
