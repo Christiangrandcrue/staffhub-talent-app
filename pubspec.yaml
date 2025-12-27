@@ -1,0 +1,42 @@
+name: staffhub_talent
+description: "StaffHub Talent - мобильное приложение для талантов ивент-агентства"
+publish_to: 'none'
+version: 1.0.0+1
+
+environment:
+  sdk: ^3.9.2
+
+dependencies:
+  flutter:
+    sdk: flutter
+  cupertino_icons: ^1.0.8
+  
+  # State Management
+  provider: 6.1.5+1
+  
+  # HTTP & API
+  http: 1.5.0
+  
+  # Local Storage
+  shared_preferences: 2.5.3
+  
+  # UI Components
+  cached_network_image: ^3.4.1
+  shimmer: ^3.0.0
+  flutter_svg: ^2.0.17
+  
+  # Utils
+  intl: ^0.20.2
+  url_launcher: ^6.3.1
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^5.0.0
+
+flutter:
+  uses-material-design: true
+  
+  assets:
+    - assets/icons/
+    - assets/images/
