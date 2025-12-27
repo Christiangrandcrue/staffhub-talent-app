@@ -179,4 +179,47 @@ class ApiService {
     final data = await _handleResponse(response);
     return data['data'];
   }
+
+  // FCM Device Registration endpoints
+  Future<void> registerDevice({
+    required String fcmToken,
+    required String platform,
+    String? deviceName,
+  }) async {
+    final body = {
+      'fcm_token': fcmToken,
+      'platform': platform,
+    };
+    if (deviceName != null) {
+      body['device_name'] = deviceName;
+    }
+    
+    final response = await http.post(
+      Uri.parse('${AppConstants.baseUrl}/talent/device'),
+      headers: _headers,
+      body: jsonEncode(body),
+    );
+    
+    await _handleResponse(response);
+  }
+
+  Future<void> unregisterDevice(String fcmToken) async {
+    final response = await http.delete(
+      Uri.parse('${AppConstants.baseUrl}/talent/device'),
+      headers: _headers,
+      body: jsonEncode({'fcm_token': fcmToken}),
+    );
+    
+    await _handleResponse(response);
+  }
+
+  Future<List<Map<String, dynamic>>> getDevices() async {
+    final response = await http.get(
+      Uri.parse('${AppConstants.baseUrl}/talent/devices'),
+      headers: _headers,
+    );
+    
+    final data = await _handleResponse(response);
+    return List<Map<String, dynamic>>.from(data['data'] ?? []);
+  }
 }

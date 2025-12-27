@@ -2,6 +2,7 @@ enum ApplicationStatus {
   pending,
   shortlisted,
   approved,
+  confirmed,
   rejected,
   withdrawn;
 
@@ -13,6 +14,8 @@ enum ApplicationStatus {
         return ApplicationStatus.shortlisted;
       case 'APPROVED':
         return ApplicationStatus.approved;
+      case 'CONFIRMED':
+        return ApplicationStatus.confirmed;
       case 'REJECTED':
         return ApplicationStatus.rejected;
       case 'WITHDRAWN':
@@ -30,6 +33,8 @@ enum ApplicationStatus {
         return 'В шортлисте';
       case ApplicationStatus.approved:
         return 'Одобрено';
+      case ApplicationStatus.confirmed:
+        return 'Подтверждено';
       case ApplicationStatus.rejected:
         return 'Отклонено';
       case ApplicationStatus.withdrawn:

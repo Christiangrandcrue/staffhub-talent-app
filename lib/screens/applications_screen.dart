@@ -172,6 +172,10 @@ class _ApplicationCard extends StatelessWidget {
         color = AppColors.success;
         icon = Icons.check_circle_outline;
         break;
+      case ApplicationStatus.confirmed:
+        color = AppColors.success;
+        icon = Icons.verified;
+        break;
       case ApplicationStatus.rejected:
         color = AppColors.error;
         icon = Icons.cancel_outlined;
