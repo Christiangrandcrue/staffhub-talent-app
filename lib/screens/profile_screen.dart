@@ -48,8 +48,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   
                   const SizedBox(height: 24),
                   
-                  // Rating
+                  // Rating with reviews
                   _buildRatingCard(profile.avgRating, profile.totalRatings),
+                  
+                  // Reviews history
+                  Consumer<DataProvider>(
+                    builder: (context, data, _) {
+                      if (data.ratings != null && data.ratings!['ratings'] != null) {
+                        final reviews = data.ratings!['ratings'] as List? ?? [];
+                        if (reviews.isNotEmpty) {
+                          return _buildReviewsCard(reviews.take(3).toList());
+                        }
+                      }
+                      return const SizedBox.shrink();
+                    },
+                  ),
                   
                   // Info cards
                   _buildInfoCard(
@@ -327,6 +340,83 @@ class _ProfileScreenState extends State<ProfileScreen> {
               ],
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReviewsCard(List reviews) {
+    return GlassCard(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              const Icon(Icons.rate_review_outlined, size: 20, color: AppColors.secondaryAmber),
+              const SizedBox(width: 8),
+              Text('Отзывы менеджеров', style: AppTextStyles.heading3),
+            ],
+          ),
+          const SizedBox(height: 16),
+          ...reviews.map((review) => _buildReviewItem(review)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildReviewItem(dynamic review) {
+    final score = review['score'] ?? 0;
+    final comment = review['comment'] ?? '';
+    final role = review['role'] ?? '';
+    final eventTitle = review['event_title'] ?? '';
+    final createdAt = review['created_at'] ?? '';
+
+    String formattedDate = '';
+    try {
+      final date = DateTime.parse(createdAt);
+      formattedDate = '${date.day}.${date.month}.${date.year}';
+    } catch (_) {}
+
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: AppColors.glassLight,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.glassBorder),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              ...List.generate(5, (index) {
+                return Icon(
+                  index < score ? Icons.star : Icons.star_border,
+                  color: AppColors.secondaryAmber,
+                  size: 16,
+                );
+              }),
+              const Spacer(),
+              Text(formattedDate, style: AppTextStyles.bodySmall),
+            ],
+          ),
+          if (comment.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              '"$comment"',
+              style: AppTextStyles.bodyMedium.copyWith(
+                fontStyle: FontStyle.italic,
+              ),
+            ),
+          ],
+          if (eventTitle.isNotEmpty || role.isNotEmpty) ...[
+            const SizedBox(height: 8),
+            Text(
+              [if (role.isNotEmpty) role, if (eventTitle.isNotEmpty) eventTitle].join(' • '),
+              style: AppTextStyles.bodySmall,
+            ),
+          ],
         ],
       ),
     );

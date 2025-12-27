@@ -150,7 +150,7 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                           ),
                         ),
 
-                      // Contact
+                      // Contact with action buttons
                       if (job.contactPerson != null || job.contactPhone != null)
                         GlassCard(
                           child: Column(
@@ -162,14 +162,28 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
                                 _buildInfoRow(Icons.person_outline, 'Имя', job.contactPerson!),
                               if (job.contactPhone != null) ...[
                                 const SizedBox(height: 12),
-                                InkWell(
-                                  onTap: () => _callPhone(job.contactPhone!),
-                                  child: _buildInfoRow(
-                                    Icons.phone_outlined,
-                                    'Телефон',
-                                    job.contactPhone!,
-                                    linkColor: AppColors.primaryPurple,
-                                  ),
+                                _buildInfoRow(Icons.phone_outlined, 'Телефон', job.contactPhone!),
+                                const SizedBox(height: 16),
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: _buildContactButton(
+                                        icon: Icons.phone,
+                                        label: 'Позвонить',
+                                        color: AppColors.success,
+                                        onTap: () => _callPhone(job.contactPhone!),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 12),
+                                    Expanded(
+                                      child: _buildContactButton(
+                                        icon: Icons.chat,
+                                        label: 'WhatsApp',
+                                        color: const Color(0xFF25D366),
+                                        onTap: () => _openWhatsApp(job.contactPhone!),
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ],
                             ],
@@ -349,10 +363,59 @@ class _JobDetailsScreenState extends State<JobDetailsScreen> {
     );
   }
 
+  Widget _buildContactButton({
+    required IconData icon,
+    required String label,
+    required Color color,
+    required VoidCallback onTap,
+  }) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(12),
+      child: Container(
+        padding: const EdgeInsets.symmetric(vertical: 12),
+        decoration: BoxDecoration(
+          color: color.withValues(alpha: 0.15),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: color.withValues(alpha: 0.3)),
+        ),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Icon(icon, color: color, size: 20),
+            const SizedBox(width: 8),
+            Text(
+              label,
+              style: TextStyle(
+                color: color,
+                fontWeight: FontWeight.w600,
+                fontSize: 14,
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   Future<void> _callPhone(String phone) async {
     final uri = Uri.parse('tel:$phone');
     if (await canLaunchUrl(uri)) {
       await launchUrl(uri);
+    }
+  }
+
+  Future<void> _openWhatsApp(String phone) async {
+    // Remove any non-digit characters except +
+    String cleanPhone = phone.replaceAll(RegExp(r'[^\d+]'), '');
+    // Remove leading + if present
+    if (cleanPhone.startsWith('+')) {
+      cleanPhone = cleanPhone.substring(1);
+    }
+    
+    final uri = Uri.parse('https://wa.me/$cleanPhone');
+    if (await canLaunchUrl(uri)) {
+      await launchUrl(uri, mode: LaunchMode.externalApplication);
     }
   }
 

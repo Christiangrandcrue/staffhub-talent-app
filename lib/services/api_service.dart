@@ -8,6 +8,7 @@ import '../models/job.dart';
 import '../models/application.dart';
 import '../models/assignment.dart';
 import '../models/document.dart';
+import '../models/notification.dart';
 
 class ApiException implements Exception {
   final String message;
@@ -248,5 +249,38 @@ class ApiService {
     
     final data = await _handleResponse(response);
     return List<Map<String, dynamic>>.from(data['data'] ?? []);
+  }
+
+  // Notifications endpoints
+  Future<List<AppNotification>> getNotifications({bool unreadOnly = false}) async {
+    final queryParams = <String, String>{};
+    if (unreadOnly) {
+      queryParams['unread_only'] = 'true';
+    }
+    
+    final uri = Uri.parse('${AppConstants.baseUrl}/notifications')
+        .replace(queryParameters: queryParams.isNotEmpty ? queryParams : null);
+    
+    final response = await http.get(uri, headers: _headers);
+    final data = await _handleResponse(response);
+    final list = data['data'] as List? ?? [];
+    return list.map((n) => AppNotification.fromJson(n)).toList();
+  }
+
+  Future<int> getUnreadNotificationsCount() async {
+    try {
+      final notifications = await getNotifications(unreadOnly: true);
+      return notifications.length;
+    } catch (_) {
+      return 0;
+    }
+  }
+
+  Future<void> markNotificationAsRead(int notificationId) async {
+    await http.patch(
+      Uri.parse('${AppConstants.baseUrl}/notifications/$notificationId'),
+      headers: _headers,
+      body: jsonEncode({'is_read': true}),
+    );
   }
 }

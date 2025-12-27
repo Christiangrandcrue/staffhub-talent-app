@@ -4,7 +4,9 @@ import '../providers/jobs_provider.dart';
 import '../utils/constants.dart';
 import '../widgets/job_card.dart';
 import '../widgets/glass_card.dart';
+import '../main.dart';
 import 'job_details_screen.dart';
+import 'notifications_screen.dart';
 
 class JobsScreen extends StatefulWidget {
   const JobsScreen({super.key});
@@ -15,14 +17,27 @@ class JobsScreen extends StatefulWidget {
 
 class _JobsScreenState extends State<JobsScreen> {
   final _scrollController = ScrollController();
+  int _unreadCount = 0;
 
   @override
   void initState() {
     super.initState();
     WidgetsBinding.instance.addPostFrameCallback((_) {
       context.read<JobsProvider>().loadJobs(refresh: true);
+      _loadUnreadCount();
     });
     _scrollController.addListener(_onScroll);
+  }
+
+  Future<void> _loadUnreadCount() async {
+    try {
+      final count = await apiService.getUnreadNotificationsCount();
+      if (mounted) {
+        setState(() {
+          _unreadCount = count;
+        });
+      }
+    } catch (_) {}
   }
 
   @override
@@ -143,7 +158,65 @@ class _JobsScreenState extends State<JobsScreen> {
               ],
             ),
           ),
+          _buildNotificationBell(),
         ],
+      ),
+    );
+  }
+
+  Widget _buildNotificationBell() {
+    return GestureDetector(
+      onTap: () async {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(builder: (_) => const NotificationsScreen()),
+        );
+        _loadUnreadCount();
+      },
+      child: Container(
+        width: 44,
+        height: 44,
+        decoration: BoxDecoration(
+          color: AppColors.glassLight,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: AppColors.glassBorder),
+        ),
+        child: Stack(
+          children: [
+            const Center(
+              child: Icon(
+                Icons.notifications_outlined,
+                color: AppColors.textSecondary,
+                size: 24,
+              ),
+            ),
+            if (_unreadCount > 0)
+              Positioned(
+                right: 8,
+                top: 8,
+                child: Container(
+                  padding: const EdgeInsets.all(4),
+                  decoration: const BoxDecoration(
+                    color: AppColors.error,
+                    shape: BoxShape.circle,
+                  ),
+                  constraints: const BoxConstraints(
+                    minWidth: 16,
+                    minHeight: 16,
+                  ),
+                  child: Text(
+                    _unreadCount > 9 ? '9+' : '$_unreadCount',
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 10,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+              ),
+          ],
+        ),
       ),
     );
   }
