@@ -62,6 +62,51 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
     }
   }
 
+  Future<void> _markAsRead(AppNotification notification) async {
+    if (notification.isRead) return;
+    
+    try {
+      await apiService.markNotificationAsRead(notification.id);
+      setState(() {
+        final index = _notifications.indexWhere((n) => n.id == notification.id);
+        if (index != -1) {
+          _notifications[index] = AppNotification(
+            id: notification.id,
+            type: notification.type,
+            title: notification.title,
+            message: notification.message,
+            isRead: true,
+            createdAt: notification.createdAt,
+            data: notification.data,
+          );
+        }
+      });
+    } catch (e) {
+      // Silent fail
+    }
+  }
+
+  Future<void> _markAllAsRead() async {
+    try {
+      await apiService.markAllNotificationsAsRead();
+      setState(() {
+        _notifications = _notifications.map((n) => AppNotification(
+          id: n.id,
+          type: n.type,
+          title: n.title,
+          message: n.message,
+          isRead: true,
+          createdAt: n.createdAt,
+          data: n.data,
+        )).toList();
+      });
+    } catch (e) {
+      // Silent fail
+    }
+  }
+
+  int get _unreadCount => _notifications.where((n) => !n.isRead).length;
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -73,6 +118,16 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
           icon: const Icon(Icons.arrow_back, color: AppColors.textPrimary),
           onPressed: () => Navigator.pop(context),
         ),
+        actions: [
+          if (_unreadCount > 0)
+            TextButton(
+              onPressed: _markAllAsRead,
+              child: Text(
+                'Прочитать все',
+                style: TextStyle(color: AppColors.primaryPurple, fontSize: 14),
+              ),
+            ),
+        ],
       ),
       body: _isLoading
           ? const Center(
@@ -97,10 +152,12 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
   }
 
   Widget _buildNotificationCard(AppNotification notification) {
-    return GlassCard(
-      margin: const EdgeInsets.only(bottom: 12),
-      padding: const EdgeInsets.all(16),
-      child: Row(
+    return GestureDetector(
+      onTap: () => _markAsRead(notification),
+      child: GlassCard(
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
+        child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Container(
@@ -165,6 +222,7 @@ class _NotificationsScreenState extends State<NotificationsScreen> {
             ),
           ),
         ],
+      ),
       ),
     );
   }

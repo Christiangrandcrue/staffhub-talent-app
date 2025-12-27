@@ -278,9 +278,15 @@ class ApiService {
 
   Future<void> markNotificationAsRead(int notificationId) async {
     await http.patch(
-      Uri.parse('${AppConstants.baseUrl}/notifications/$notificationId'),
+      Uri.parse('${AppConstants.baseUrl}/notifications/$notificationId/read'),
       headers: _headers,
-      body: jsonEncode({'is_read': true}),
+    );
+  }
+
+  Future<void> markAllNotificationsAsRead() async {
+    await http.patch(
+      Uri.parse('${AppConstants.baseUrl}/notifications/read-all'),
+      headers: _headers,
     );
   }
 }
